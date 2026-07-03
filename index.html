@@ -1,6 +1,2441 @@
 <!doctype html>
-<meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=./thesis-writing-tool.html">
-<title>論文撰寫工作台</title>
-<p>正在開啟論文撰寫工作台...</p>
-<p><a href="./thesis-writing-tool.html">如果沒有自動跳轉，請點此開啟。</a></p>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>論文撰寫工作台</title>
+  <style>
+    :root {
+      --ink: #17201c;
+      --muted: #66736d;
+      --line: #d9e1dc;
+      --paper: #fbfcfa;
+      --panel: #ffffff;
+      --brand: #256f63;
+      --brand-2: #a43f4b;
+      --accent: #d89b32;
+      --blue: #416c9f;
+      --soft: #eef5f2;
+      --shadow: 0 18px 42px rgba(33, 45, 39, .12);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(37,111,99,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(37,111,99,.06) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+    }
+
+    aside {
+      background: #f6faf8;
+      border-right: 1px solid var(--line);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .brand {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      background: conic-gradient(from 210deg, var(--brand), var(--blue), var(--accent), var(--brand));
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow);
+      color: white;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .title-link {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      font-weight: 800;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .brand p, .field span, .small, .meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .brand p { margin: 4px 0 0; }
+
+    .tabs {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tab {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 8px;
+      background: transparent;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tab[aria-selected="true"] {
+      background: #e6f1ed;
+      color: #0d5c51;
+      font-weight: 700;
+    }
+
+    .tab-static {
+      cursor: default;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .sync-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .icon-btn, .primary, .secondary, .chip {
+      border-radius: 8px;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 12px;
+    }
+
+    .primary {
+      background: var(--brand);
+      color: white;
+      box-shadow: 0 10px 22px rgba(37,111,99,.22);
+    }
+
+    .secondary, .icon-btn, .chip {
+      background: #edf3f0;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      text-decoration: none;
+    }
+
+    main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .workspace {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255,255,255,.86);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      backdrop-filter: blur(12px);
+    }
+
+    .project-title {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--brand-2);
+      box-shadow: 0 0 0 5px rgba(164,63,75,.1);
+      flex: 0 0 auto;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .topbar h2 {
+      overflow-wrap: anywhere;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(360px, 1.1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 112px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(37,111,99,.12);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .section-list, .source-list, .draft-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .journal-list {
+      display: grid;
+      gap: 8px;
+      max-height: 430px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .check-row {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 9px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .check-row input {
+      width: 18px;
+      height: 18px;
+      margin: 2px 0 0;
+      accent-color: var(--brand);
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 10px;
+    }
+
+    .card strong {
+      overflow-wrap: anywhere;
+    }
+
+    .card-actions {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+
+    .action-btn {
+      min-width: 34px;
+      min-height: 34px;
+      border-radius: 8px;
+      background: #edf3f0;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .action-btn.active {
+      background: #dfeee8;
+      border-color: #7fb0a4;
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    .action-btn:disabled {
+      opacity: .38;
+      cursor: not-allowed;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      background: #f1f5f3;
+      border: 1px solid var(--line);
+      color: #34534c;
+      padding: 4px 7px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .danger {
+      color: #9b2632;
+      background: #f9e9eb;
+      border: 1px solid #efcbd0;
+      border-radius: 8px;
+      min-width: 34px;
+      min-height: 34px;
+    }
+
+    .canvas {
+      min-height: 620px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+
+    .map {
+      min-height: 210px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 15% 30%, rgba(216,155,50,.20), transparent 24%),
+        radial-gradient(circle at 80% 18%, rgba(65,108,159,.18), transparent 27%),
+        linear-gradient(135deg, #f7fbf9, #ffffff);
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      align-content: stretch;
+    }
+
+    .map-node {
+      border: 1px solid rgba(37,111,99,.22);
+      background: rgba(255,255,255,.78);
+      border-radius: 8px;
+      padding: 10px;
+      display: grid;
+      align-content: start;
+      gap: 6px;
+      min-height: 86px;
+    }
+
+    .map-node b {
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .map-node span {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .draft-item {
+      display: grid;
+      gap: 10px;
+    }
+
+    .draft-output {
+      min-height: 210px;
+      font-family: "Noto Serif TC", "PMingLiU", serif;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .figure-thumb {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8faf9;
+      cursor: context-menu;
+    }
+
+    .hidden { display: none; }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      background: #17201c;
+      color: #fff;
+      border-radius: 8px;
+      padding: 11px 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: .2s ease;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .tabs { grid-template-columns: repeat(4, 1fr); }
+      .grid { grid-template-columns: 1fr; }
+      .map { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      main, aside { padding: 14px; }
+      .topbar, .project-title, .top-actions { align-items: stretch; }
+      .topbar, .project-title { flex-direction: column; }
+      .tabs, .split, .actions { grid-template-columns: 1fr; }
+      .top-actions { justify-content: stretch; }
+      .top-actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="mark">論</div>
+        <div>
+          <h1><button class="title-link" id="brandHomeBtn" type="button">論文撰寫工作台</button></h1>
+          <p>摘要、架構、圖目錄、參考文獻</p>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="工作區">
+        <div class="tab tab-static"><span id="currentProjectTabTitle">尚未選擇</span></div>
+        <button class="tab" data-view="plan" aria-selected="false"><span>研究專案設定</span><span>01</span></button>
+        <button class="tab" data-view="structure" aria-selected="false"><span>章節架構</span><span>02</span></button>
+        <button class="tab" data-view="options" aria-selected="false"><span>目標期刊</span><span>03</span></button>
+        <button class="tab" data-view="sources" aria-selected="false"><span>圖目錄</span><span>04</span></button>
+        <button class="tab" data-view="references" aria-selected="false"><span>參考資料</span><span>05</span></button>
+        <button class="tab" data-view="draft" aria-selected="false"><span>草稿編輯</span><span>06</span></button>
+      </nav>
+
+      <div class="panel">
+        <h3>字數統計</h3>
+        <div class="small" id="progressText">尚未建立研究專案設定</div>
+      </div>
+      <div class="panel sync-actions">
+        <h3>研究專案</h3>
+        <button class="secondary" id="saveProjectFolderBtn">儲存研究專案</button>
+        <button class="secondary" id="exportProjectBtn">匯出研究專案</button>
+        <button class="secondary" id="saveAllProjectsBtn">全部儲存</button>
+        <button class="secondary" id="exportAllProjectsBtn">全部匯出</button>
+        <input class="hidden" id="backupFileInput" type="file" accept="application/json,.json">
+        <div class="small" id="syncStatus">尚未儲存到本機研究專案資料夾。</div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="workspace">
+        <header class="topbar">
+          <div class="project-title">
+            <span class="status-dot" aria-hidden="true"></span>
+            <div>
+              <h2 id="headline">未命名研究</h2>
+              <div class="meta" id="subtitle">等待摘要與章節設定</div>
+            </div>
+          </div>
+          <div class="top-actions">
+            <button class="primary" id="organizeBtn">編輯文章</button>
+            <button class="secondary" id="exportTxtBtn">匯出 TXT</button>
+          </div>
+        </header>
+
+        <section class="view grid" id="view-home">
+          <div class="panel">
+            <h3>研究專案</h3>
+            <div class="form">
+              <div class="field">
+                <label for="newProjectTitle">研究專案名稱</label>
+                <input id="newProjectTitle" placeholder="例：生成式 AI 與學術寫作">
+              </div>
+              <button class="primary" id="newProjectBtn">建立新研究專案</button>
+              <button class="secondary" id="openProjectFileBtn">開啟研究專案</button>
+              <button class="secondary" id="openProjectCollectionBtn">開啟專案集合</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>研究專案清單</h3>
+            <div class="section-list" id="projectList"></div>
+          </div>
+        </section>
+
+        <section class="view hidden" id="view-plan">
+          <div class="panel">
+            <h3>研究專案設定</h3>
+            <div class="form">
+              <div class="field">
+                <label for="title">中文標題</label>
+                <input id="title" placeholder="例：生成式 AI 對大學生學術寫作歷程之影響">
+              </div>
+              <div class="field">
+                <label for="englishTitle">英文標題</label>
+                <input id="englishTitle" placeholder="Example: The Impact of Generative AI on Academic Writing">
+              </div>
+              <div class="field">
+                <label for="coreTheory">核心理論</label>
+                <textarea id="coreTheory" placeholder="輸入主要理論、概念模型或分析框架"></textarea>
+              </div>
+              <div class="field">
+                <label for="theme">中文摘要</label>
+                <textarea id="theme" placeholder="輸入中文摘要；英文摘要空白時會嘗試自動翻譯"></textarea>
+              </div>
+              <div class="field">
+                <label for="enAbstract">英文摘要</label>
+                <textarea id="enAbstract" placeholder="Enter English abstract; 中文摘要空白時會嘗試自動翻譯"></textarea>
+              </div>
+              <div class="field">
+                <label for="zhKeywords">中文關鍵字</label>
+                <textarea id="zhKeywords" placeholder="一行一個或以逗號分隔"></textarea>
+              </div>
+              <div class="field">
+                <label for="enKeywords">英文關鍵字</label>
+                <textarea id="enKeywords" placeholder="One per line or separate with commas"></textarea>
+              </div>
+              <button class="primary" id="saveSettingsBtn">儲存研究專案設定</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="view grid hidden" id="view-structure">
+          <div class="panel">
+            <h3>新增章節</h3>
+            <div class="form">
+              <div class="field">
+                <label for="sectionTitle">章節名稱</label>
+                <input id="sectionTitle" placeholder="例：第二章 文獻回顧">
+              </div>
+              <div class="field">
+                <label for="sectionAim">本章目的</label>
+                <textarea id="sectionAim" placeholder="這一章要回答什麼、鋪陳什麼或證明什麼"></textarea>
+              </div>
+              <div class="field">
+                <label for="sectionKeys">關鍵字</label>
+                <input id="sectionKeys" placeholder="以逗號分隔，例：學術寫作, AI 工具, 學習策略">
+              </div>
+              <button class="primary" id="addSectionBtn">加入章節</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>章節清單</h3>
+            <div class="section-list" id="sectionList"></div>
+          </div>
+        </section>
+
+        <section class="view grid hidden" id="view-options">
+          <div class="panel">
+            <h3>目標期刊</h3>
+            <div class="form">
+              <div class="field">
+                <label for="manualJournalTitle">手動新增期刊標題</label>
+                <input id="manualJournalTitle" placeholder="例：Computers & Education">
+              </div>
+              <div class="field">
+                <label for="manualJournalHomepage">Homepage</label>
+                <input id="manualJournalHomepage" placeholder="https://...">
+              </div>
+              <div class="field">
+                <label for="manualJournalAim">Aim & Scope</label>
+                <textarea id="manualJournalAim" placeholder="貼上期刊 aim and scope 文字"></textarea>
+              </div>
+              <div class="field">
+                <label for="manualJournalIndex">Index</label>
+                <input id="manualJournalIndex" placeholder="以逗號分隔，例：SSCI, Scopus, ESCI">
+              </div>
+              <button class="primary" id="addManualJournalBtn">加入目標期刊</button>
+              <div class="journal-list" id="journalList"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>已選期刊</h3>
+            <div class="source-list" id="selectedJournalList"></div>
+          </div>
+        </section>
+
+        <section class="view grid hidden" id="view-sources">
+          <div class="panel">
+            <h3>新增圖目錄</h3>
+            <div class="form">
+              <div class="field">
+                <label for="figureFile">上傳圖檔</label>
+                <input id="figureFile" type="file" accept="image/*">
+              </div>
+              <div class="field">
+                <label for="sourceTitle">圖標</label>
+                <input id="sourceTitle" placeholder="例：圖 1 研究架構圖">
+              </div>
+              <div class="field">
+                <label for="sourceNote">敘述</label>
+                <textarea id="sourceNote" placeholder="輸入圖說、來源、解釋或分析重點"></textarea>
+              </div>
+              <div class="field">
+                <label for="sourceTags">標籤</label>
+                <input id="sourceTags" placeholder="以逗號分隔">
+              </div>
+              <button class="primary" id="addSourceBtn">加入圖目錄</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>圖目錄</h3>
+            <div class="source-list" id="sourceList"></div>
+          </div>
+        </section>
+
+        <section class="view grid hidden" id="view-references">
+          <div class="panel">
+            <h3>Google 學術搜尋</h3>
+            <div class="form">
+              <div class="field">
+                <label for="scholarKeyword">搜尋關鍵字</label>
+                <input id="scholarKeyword" placeholder="例：generative AI academic writing higher education">
+              </div>
+              <div class="split">
+                <button class="primary" id="scholarSearchBtn">開啟 Scholar 搜尋頁</button>
+                <button class="secondary" id="copyScholarLinkBtn">複製搜尋連結</button>
+              </div>
+              <div class="field">
+                <label for="refApa">APA</label>
+                <textarea id="refApa" placeholder="貼上 APA 純文字"></textarea>
+              </div>
+              <div class="field">
+                <label for="refLink">連結</label>
+                <input id="refLink" placeholder="貼上 Google 學術或文章連結">
+              </div>
+              <div class="field">
+                <label for="refNote">摘要 / 備註</label>
+                <textarea id="refNote" placeholder="英文內容可點翻譯成中文"></textarea>
+              </div>
+              <div class="split">
+                <button class="primary" id="saveReferenceBtn">儲存參考資料</button>
+                <button class="secondary" id="translateRefBtn">英翻中</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>已存參考資料</h3>
+            <div class="section-list" id="referenceList"></div>
+          </div>
+        </section>
+
+        <section class="view hidden" id="view-draft">
+          <div class="panel">
+            <h3>章節草稿</h3>
+            <div class="draft-list" id="frontMatterDraft"></div>
+            <div class="draft-list" id="draftList"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const initialSections = [
+      { title: "第一章 緒論", aim: "說明研究背景、主旨、研究焦點與研究價值。", keys: ["背景", "主旨", "研究焦點"] },
+      { title: "第二章 文獻回顧", aim: "整理既有研究脈絡，指出概念關係與研究缺口。", keys: ["文獻", "理論", "研究缺口"] },
+      { title: "第三章 研究方法", aim: "交代研究設計、資料來源、分析流程與限制。", keys: ["方法", "資料", "分析"] },
+      { title: "第四章 研究過程", aim: "呈現研究執行、資料蒐集、分析步驟與過程中的調整。", keys: ["研究過程", "資料蒐集", "分析步驟"] },
+      { title: "第五章 結果討論", aim: "依研究焦點整理結果，連結核心理論並進行討論。", keys: ["結果", "討論", "核心理論"] },
+      { title: "第六章 結論", aim: "統整研究貢獻、限制與後續研究方向。", keys: ["結論", "貢獻", "限制"] }
+    ];
+
+    function loadSharedJournals() {
+      const saved = JSON.parse(localStorage.getItem("thesisWorkbenchSharedJournals") || "null");
+      if (Array.isArray(saved) && saved.length) return saved.map(normalizeJournal);
+      return [];
+    }
+
+    const $ = (id) => document.getElementById(id);
+    const fields = ["title", "englishTitle", "coreTheory", "theme", "enAbstract", "zhKeywords", "enKeywords"];
+
+    function createDefaultState(title = "") {
+      return {
+        id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `project-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        title,
+        englishTitle: "",
+        coreTheory: "",
+        theme: "",
+        enAbstract: "",
+        questions: "",
+        zhKeywords: "",
+        enKeywords: "",
+        method: "文獻分析",
+        tone: "正式學術",
+        targetJournals: [],
+        sections: typeof structuredClone === "function" ? structuredClone(initialSections) : JSON.parse(JSON.stringify(initialSections)),
+        sources: [],
+        references: [],
+        journalScholarResults: [],
+        journalScholarPage: 0,
+        journalScholarQuery: "",
+        drafts: {},
+        updatedAt: new Date().toLocaleString("zh-TW")
+      };
+    }
+
+    function loadProjects() {
+      const saved = JSON.parse(localStorage.getItem("thesisWorkbenchProjects") || "null");
+      if (saved?.projects?.length) return saved;
+      const legacy = JSON.parse(localStorage.getItem("thesisWorkbench") || "null");
+      const first = { ...createDefaultState(legacy?.title || "未命名研究"), ...(legacy || {}) };
+      first.id ||= createDefaultState().id;
+      first.searchCache = [];
+      first.scholarResults = [];
+      first.updatedAt ||= new Date().toLocaleString("zh-TW");
+      return { currentId: first.id, projects: [first] };
+    }
+
+    let projectStore = loadProjects();
+    let state = projectStore.projects.find((project) => project.id === projectStore.currentId) || projectStore.projects[0] || createDefaultState();
+    let sharedJournals = loadSharedJournals();
+    let editingSectionIndex = null;
+    let editingSourceIndex = null;
+    let editingReferenceIndex = null;
+    let projectDirectoryHandle = null;
+    let hasUnsavedProjectChanges = false;
+    let isApplyingStoredProject = false;
+    let backupInputMode = "project";
+    const folderDbName = "thesisWorkbenchFolder";
+    const folderStoreName = "handles";
+    const folderHandleKey = "project-storage";
+    const folderSavedAtKey = "thesisWorkbenchFolderSavedAt";
+    const preferredProjectFolderName = "project-storage";
+    const imageFolderName = "imgData";
+    const projectStorageRelativePath = "../project-storage";
+    const imageFolderRelativePath = `${projectStorageRelativePath}/${imageFolderName}/`;
+
+    state.englishTitle ||= "";
+    state.coreTheory ||= "";
+    state.enAbstract ||= "";
+    state.zhKeywords ||= "";
+    state.enKeywords ||= "";
+    state.targetJournals ||= [];
+    state.references ||= [];
+    state.journalScholarResults ||= [];
+    state.journalScholarPage ||= 0;
+    state.journalScholarQuery ||= "";
+
+    projectStore.projects.forEach((project) => {
+      (project.targetJournals || []).forEach((journal) => upsertSharedJournal(journal));
+    });
+
+    if (
+      state.sections?.length === 5 &&
+      state.sections[3]?.title === "第四章 分析與討論" &&
+      state.sections[4]?.title === "第五章 結論"
+    ) {
+      state.sections = initialSections;
+      state.drafts = {};
+    }
+
+    function save() {
+      fields.forEach((id) => {
+        if ($(id)) state[id] = $(id).value.trim();
+      });
+      state.updatedAt = new Date().toLocaleString("zh-TW");
+      saveProjectStore();
+      render();
+    }
+
+    function saveProjectStore() {
+      const index = projectStore.projects.findIndex((project) => project.id === state.id);
+      if (index >= 0) projectStore.projects[index] = state;
+      projectStore.currentId = state.id;
+      localStorage.setItem("thesisWorkbenchProjects", JSON.stringify(projectStore));
+      localStorage.setItem("thesisWorkbench", JSON.stringify(state));
+      if (!isApplyingStoredProject) hasUnsavedProjectChanges = true;
+    }
+
+    function saveSharedJournals() {
+      localStorage.setItem("thesisWorkbenchSharedJournals", JSON.stringify(sharedJournals));
+    }
+
+    function moveItem(list, index, direction) {
+      const targetIndex = index + direction;
+      if (!list[index] || !list[targetIndex]) return null;
+      const [moved] = list.splice(index, 1);
+      list.splice(targetIndex, 0, moved);
+      return targetIndex;
+    }
+
+    function shiftedEditIndex(editIndex, index, targetIndex) {
+      if (editIndex === index) return targetIndex;
+      if (editIndex === targetIndex) return index;
+      return editIndex;
+    }
+
+    function buildArticleContent(project = state) {
+      return {
+        title: project.title || "",
+        englishTitle: project.englishTitle || "",
+        coreTheory: project.coreTheory || "",
+        zhAbstract: project.theme || "",
+        enAbstract: project.enAbstract || "",
+        zhKeywords: project.zhKeywords || "",
+        enKeywords: project.enKeywords || "",
+        sections: project.sections || [],
+        drafts: project.drafts || {},
+        references: project.references || [],
+        targetJournals: project.targetJournals || []
+      };
+    }
+
+    function buildProjectImages(project = state) {
+      return (project.sources || []).map((source, index) => ({
+        index,
+        title: source.title || "",
+        fileName: source.fileName || "",
+        note: source.note || "",
+        tags: source.tags || [],
+        imageData: source.imageData || ""
+      }));
+    }
+
+    function buildBackupPayload() {
+      return {
+        app: "thesis-writing-workbench",
+        version: 1,
+        type: "all-projects",
+        exportedAt: new Date().toISOString(),
+        projectStore,
+        projects: projectStore.projects.map((project) => buildProjectPayload(project)),
+        sharedJournals
+      };
+    }
+
+    function buildProjectPayload(project = state) {
+      return {
+        app: "thesis-writing-workbench",
+        version: 1,
+        type: "single-project",
+        exportedAt: new Date().toISOString(),
+        project,
+        articleContent: buildArticleContent(project),
+        images: buildProjectImages(project),
+        sharedJournals
+      };
+    }
+
+    function applyBackupPayload(payload) {
+      if (!payload?.projectStore?.projects?.length) {
+        throw new Error("備份檔格式不正確");
+      }
+      isApplyingStoredProject = true;
+      projectStore = payload.projectStore;
+      sharedJournals = Array.isArray(payload.sharedJournals) ? payload.sharedJournals.map(normalizeJournal) : [];
+      state = projectStore.projects.find((project) => project.id === projectStore.currentId) || projectStore.projects[0];
+      saveProjectStore();
+      saveSharedJournals();
+      hasUnsavedProjectChanges = false;
+      isApplyingStoredProject = false;
+      render();
+    }
+
+    function applyProjectPayload(payload, options = {}) {
+      const allowCollection = options.allowCollection !== false;
+      if (payload?.projectStore?.projects?.length) {
+        if (!allowCollection) throw new Error("請選擇個別研究專案 JSON；專案集合請使用「開啟專案集合」。");
+        return applyBackupPayload(payload);
+      }
+      if (!payload?.project?.id) throw new Error("研究專案檔格式不正確");
+      isApplyingStoredProject = true;
+      sharedJournals = Array.isArray(payload.sharedJournals) ? payload.sharedJournals.map(normalizeJournal) : sharedJournals;
+      const incoming = payload.project;
+      if (Array.isArray(payload.images)) {
+        incoming.sources ||= [];
+        payload.images.forEach((image, index) => {
+          if (!image?.imageData) return;
+          const source = incoming.sources[index] || incoming.sources.find((item) => item.title === image.title && item.fileName === image.fileName);
+          if (source && !source.imageData) source.imageData = image.imageData;
+        });
+      }
+      incoming.updatedAt ||= new Date().toLocaleString("zh-TW");
+      const index = projectStore.projects.findIndex((project) => project.id === incoming.id);
+      if (index >= 0) {
+        projectStore.projects[index] = incoming;
+      } else {
+        projectStore.projects.unshift(incoming);
+      }
+      state = incoming;
+      projectStore.currentId = incoming.id;
+      saveProjectStore();
+      saveSharedJournals();
+      hasUnsavedProjectChanges = true;
+      isApplyingStoredProject = false;
+      render();
+    }
+
+    function backupFileName() {
+      const date = new Date().toISOString().slice(0, 10);
+      return `thesis-workbench-all-${date}.json`;
+    }
+
+    function projectFileName(project = state) {
+      const safeTitle = (project.title || "未命名研究").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, "-").slice(0, 48);
+      return `project-${safeTitle}-${project.id}.json`;
+    }
+
+    function safeFileName(value, fallback = "image") {
+      return (value || fallback).replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, "-").slice(0, 80) || fallback;
+    }
+
+    function allProjectsFileName() {
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      return `thesis-workbench-all-${stamp}.json`;
+    }
+
+    function downloadJson(payload, filename) {
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function updateSyncStatus(message) {
+      $("syncStatus").textContent = message;
+    }
+
+    function openFolderDb() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error("此瀏覽器不支援記住資料夾權限"));
+        const request = indexedDB.open(folderDbName, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(folderStoreName);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function rememberProjectDirectory(handle) {
+      const db = await openFolderDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(folderStoreName, "readwrite");
+        tx.objectStore(folderStoreName).put(handle, folderHandleKey);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+      db.close();
+    }
+
+    async function loadProjectDirectoryHandle() {
+      try {
+        const db = await openFolderDb();
+        const handle = await new Promise((resolve, reject) => {
+          const tx = db.transaction(folderStoreName, "readonly");
+          const request = tx.objectStore(folderStoreName).get(folderHandleKey);
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error);
+        });
+        db.close();
+        return handle;
+      } catch {
+        return null;
+      }
+    }
+
+    async function verifyDirectoryPermission(handle, mode = "readwrite") {
+      if (!handle?.queryPermission) return false;
+      if (await handle.queryPermission({ mode }) === "granted") return true;
+      return await handle.requestPermission({ mode }) === "granted";
+    }
+
+    async function ensureProjectDirectory() {
+      if (!window.showDirectoryPicker) throw new Error("此瀏覽器不支援本機資料夾儲存，請使用 Chrome 或 Edge。");
+      if (projectDirectoryHandle && await verifyDirectoryPermission(projectDirectoryHandle)) return projectDirectoryHandle;
+      projectDirectoryHandle = await loadProjectDirectoryHandle();
+      if (projectDirectoryHandle && await verifyDirectoryPermission(projectDirectoryHandle)) return projectDirectoryHandle;
+      if (!confirm(`尚未設定本機研究專案資料夾。是否現在選擇或建立「${preferredProjectFolderName}」資料夾？\n\n請直接選擇該資料夾；系統會把 JSON 放在這一層，避免產生過多巢狀資料夾。`)) {
+        throw new Error("尚未設定本機研究專案資料夾");
+      }
+      projectDirectoryHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+      if (!await verifyDirectoryPermission(projectDirectoryHandle)) throw new Error("尚未授權資料夾讀寫");
+      await rememberProjectDirectory(projectDirectoryHandle);
+      return projectDirectoryHandle;
+    }
+
+    async function writeJsonFile(directoryHandle, filename, payload) {
+      const fileHandle = await directoryHandle.getFileHandle(filename, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(payload, null, 2));
+      await writable.close();
+    }
+
+    function dataUrlToBlob(dataUrl) {
+      const [meta, data] = dataUrl.split(",");
+      const mime = meta.match(/data:([^;]+)/)?.[1] || "application/octet-stream";
+      const binary = atob(data || "");
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      return new Blob([bytes], { type: mime });
+    }
+
+    function imageFileName(project, source, index) {
+      const original = source.fileName || `${source.title || "image"}.png`;
+      const extension = original.includes(".") ? original.split(".").pop() : "png";
+      const base = safeFileName(`${project.title || "project"}-${source.title || `image-${index + 1}`}`);
+      return `${base}.${extension}`;
+    }
+
+    function sourceImagePath(source) {
+      if (!source.imageFilePath) return "";
+      return source.imageFilePath.startsWith(`${preferredProjectFolderName}/`)
+        ? `../${source.imageFilePath}`
+        : source.imageFilePath;
+    }
+
+    function sourceImageSrc(source) {
+      return sourceImagePath(source) || source.imageData || "";
+    }
+
+    async function writeProjectImages(directoryHandle, project) {
+      const imageDirectory = await directoryHandle.getDirectoryHandle(imageFolderName, { create: true });
+      for (const [index, source] of (project.sources || []).entries()) {
+        if (!source.imageData?.startsWith("data:")) continue;
+        const filename = imageFileName(project, source, index);
+        const fileHandle = await imageDirectory.getFileHandle(filename, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(dataUrlToBlob(source.imageData));
+        await writable.close();
+        source.imageFilePath = `${preferredProjectFolderName}/${imageFolderName}/${filename}`;
+      }
+    }
+
+    async function writeAllProjectImages(directoryHandle) {
+      for (const project of projectStore.projects) {
+        await writeProjectImages(directoryHandle, project);
+      }
+    }
+
+    async function readJsonFileHandle(fileHandle) {
+      const file = await fileHandle.getFile();
+      return { payload: JSON.parse(await file.text()), lastModified: file.lastModified, name: file.name };
+    }
+
+    async function loadLatestProjectJsonFromRelativeFolder() {
+      try {
+        const response = await fetch(`${projectStorageRelativePath}/_thesis-workbench-latest.json`, { cache: "no-store" });
+        if (!response.ok) return false;
+        applyProjectPayload(await response.json());
+        updateSyncStatus(`已優先讀取 ${projectStorageRelativePath}/_thesis-workbench-latest.json`);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function saveProjectsToFolder() {
+      save();
+      const directoryHandle = await ensureProjectDirectory();
+      await writeAllProjectImages(directoryHandle);
+      for (const project of projectStore.projects) {
+        await writeJsonFile(directoryHandle, projectFileName(project), buildProjectPayload(project));
+      }
+      await writeJsonFile(directoryHandle, "_thesis-workbench-latest.json", buildBackupPayload());
+      localStorage.setItem(folderSavedAtKey, new Date().toISOString());
+      hasUnsavedProjectChanges = false;
+      updateSyncStatus(`已儲存 ${projectStore.projects.length} 個研究專案；圖片檔已寫入 ${preferredProjectFolderName}/${imageFolderName}，JSON 仍保留 images.imageData。`);
+      toast("已儲存研究專案");
+    }
+
+    async function saveAllProjectsToFolder() {
+      save();
+      const directoryHandle = await ensureProjectDirectory();
+      await writeAllProjectImages(directoryHandle);
+      const payload = buildBackupPayload();
+      await writeJsonFile(directoryHandle, "_thesis-workbench-latest.json", payload);
+      await writeJsonFile(directoryHandle, allProjectsFileName(), payload);
+      localStorage.setItem(folderSavedAtKey, new Date().toISOString());
+      hasUnsavedProjectChanges = false;
+      updateSyncStatus(`全部研究專案已儲存；圖片檔已寫入 ${preferredProjectFolderName}/${imageFolderName}。`);
+      toast("已全部儲存");
+    }
+
+    async function saveAllProjectsToRememberedFolder() {
+      try {
+        const directoryHandle = projectDirectoryHandle || await loadProjectDirectoryHandle();
+        if (!directoryHandle || !await verifyDirectoryPermission(directoryHandle)) return false;
+        projectDirectoryHandle = directoryHandle;
+        await writeAllProjectImages(directoryHandle);
+        const payload = buildBackupPayload();
+        await writeJsonFile(directoryHandle, "_thesis-workbench-latest.json", payload);
+        localStorage.setItem(folderSavedAtKey, new Date().toISOString());
+        hasUnsavedProjectChanges = false;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function chooseJsonFromProjectStorage() {
+      if (!window.showOpenFilePicker) return null;
+      projectDirectoryHandle = projectDirectoryHandle || await loadProjectDirectoryHandle();
+      if (!projectDirectoryHandle || await projectDirectoryHandle.queryPermission?.({ mode: "read" }) !== "granted") {
+        if (confirm(`是否先選擇已存在的「${preferredProjectFolderName}」資料夾，讓檔案選擇器從該資料夾開啟？`)) {
+          projectDirectoryHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+          if (await verifyDirectoryPermission(projectDirectoryHandle)) await rememberProjectDirectory(projectDirectoryHandle);
+        }
+      }
+      const options = {
+        types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+        multiple: false
+      };
+      if (projectDirectoryHandle) options.startIn = projectDirectoryHandle;
+      const [fileHandle] = await window.showOpenFilePicker(options);
+      return fileHandle.getFile();
+    }
+
+    async function loadLatestProjectJsonFromFolder() {
+      if (await loadLatestProjectJsonFromRelativeFolder()) return true;
+      projectDirectoryHandle = await loadProjectDirectoryHandle();
+      if (!projectDirectoryHandle?.queryPermission) return false;
+      if (await projectDirectoryHandle.queryPermission({ mode: "readwrite" }) !== "granted") return false;
+      let latest = null;
+      for await (const entry of projectDirectoryHandle.values()) {
+        if (entry.kind !== "file" || !entry.name.toLowerCase().endsWith(".json")) continue;
+        try {
+          const current = await readJsonFileHandle(entry);
+          if (!latest || current.lastModified > latest.lastModified) latest = current;
+        } catch {
+          // Ignore non-project JSON files in the selected folder.
+        }
+      }
+      if (!latest) return false;
+      applyProjectPayload(latest.payload);
+      updateSyncStatus(`已優先讀取本機資料夾最新 JSON：${latest.name}`);
+      return true;
+    }
+
+    function upsertSharedJournal(journal) {
+      const item = normalizeJournal(journal);
+      const index = sharedJournals.findIndex((shared) => journalName(shared) === item.name);
+      if (index >= 0) {
+        sharedJournals[index] = { ...sharedJournals[index], ...item };
+      } else {
+        sharedJournals.unshift(item);
+      }
+      saveSharedJournals();
+    }
+
+    function toast(message) {
+      $("toast").textContent = message;
+      $("toast").classList.add("show");
+      setTimeout(() => $("toast").classList.remove("show"), 1700);
+    }
+
+    function splitTags(value) {
+      return value.split(/[,，]/).map((item) => item.trim()).filter(Boolean);
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function debounce(fn, wait = 700) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), wait);
+      };
+    }
+
+    async function translateText(text, from, to) {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data[0].map((part) => part[0]).join("");
+    }
+
+    const translateAbstract = debounce(async (sourceId, targetId, from, to) => {
+      const source = $(sourceId).value.trim();
+      const target = $(targetId).value.trim();
+      if (!source || target) return;
+      try {
+        $(targetId).value = await translateText(source, from, to);
+        save();
+        toast("摘要已自動互翻");
+      } catch {
+        toast("自動翻譯暫時無法連線");
+      }
+    }, 950);
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[char]));
+    }
+
+    function decodeHtml(value) {
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = value || "";
+      return textarea.value;
+    }
+
+    async function fetchScholarResults(keyword, page = 0, mode = "article") {
+      const start = Math.max(0, page) * 10;
+      const params = mode === "journal"
+        ? `as_publication=${encodeURIComponent(keyword)}&start=${start}&num=10`
+        : `q=${encodeURIComponent(keyword)}&start=${start}&num=10`;
+      const scholarUrl = `https://scholar.google.com/scholar?${params}`;
+      const allOriginsUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(scholarUrl)}`;
+      const attempts = [allOriginsUrl, scholarUrl];
+      let lastError;
+      for (const url of attempts) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const text = await response.text();
+          const results = parseScholarResults(text, keyword, mode);
+          if (results.length) return results;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error("No results");
+    }
+
+    function isBlockedScholarText(text) {
+      return /403:\s*Forbidden|Target URL returned error 403|maybe not yet fully loaded|unusual traffic|captcha/i.test(text || "");
+    }
+
+    function parseScholarResults(text, keyword, mode = "article") {
+      if (!text) return [];
+      if (isBlockedScholarText(text)) return [];
+      const htmlResults = parseScholarHtml(text, keyword, mode);
+      return htmlResults.length ? htmlResults : parseScholarText(text, keyword, mode);
+    }
+
+    function parseScholarHtml(html, keyword, mode = "article") {
+      if (!html.includes("gs_ri") && !html.includes("gs_rt")) return [];
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      return Array.from(doc.querySelectorAll(".gs_ri")).slice(0, 10).map((item) => {
+        const titleNode = item.querySelector(".gs_rt a") || item.querySelector(".gs_rt");
+        const info = item.querySelector(".gs_a")?.textContent.trim() || "";
+        const snippet = item.querySelector(".gs_rs")?.textContent.trim() || "";
+        const footer = item.querySelector(".gs_fl")?.textContent || "";
+        const cited = footer.match(/Cited by\s+(\d+)|被引用\s*(\d+)|引用\s*(\d+)/i);
+        return {
+          title: titleNode?.textContent.trim() || "未命名文獻",
+          link: titleNode?.href || `https://scholar.google.com/scholar?q=${encodeURIComponent(keyword)}`,
+          authors: info,
+          source: "",
+          snippet,
+          citedBy: cited ? Number(cited[1] || cited[2] || cited[3]) : 0,
+          type: mode,
+          keyword
+        };
+      }).filter((item) => item.title && !item.title.includes("引用"));
+    }
+
+    function parseScholarText(text, keyword, mode = "article") {
+      if (isBlockedScholarText(text)) return [];
+      const lines = text.split(/\n+/).map((line) => decodeHtml(line).trim()).filter(Boolean);
+      const results = [];
+      for (let i = 0; i < lines.length && results.length < 10; i++) {
+        const line = lines[i].replace(/^#+\s*/, "").trim();
+        const markdownLink = line.match(/\[([^\]]{12,})\]\((https?:\/\/[^\)]+)\)/);
+        const title = markdownLink ? markdownLink[1] : line;
+        if (!markdownLink && !/^[A-Z0-9].{20,180}$/.test(title)) continue;
+        if (/Google Scholar|全部版本|Warning:|Markdown Content|403|Forbidden|Cited by|被引用|引用/.test(title)) continue;
+        const link = markdownLink ? markdownLink[2] : `https://scholar.google.com/scholar?q=${encodeURIComponent(`${keyword} ${title}`)}`;
+        const snippet = lines.slice(i + 1, i + 4).join(" ").slice(0, 520);
+        const cited = `${line} ${snippet}`.match(/Cited by\s+(\d+)|被引用\s*(\d+)|引用\s*(\d+)/i);
+        if (!results.some((item) => item.title === title)) {
+          results.push({
+            title,
+            link,
+            authors: "",
+            source: "",
+            snippet,
+            citedBy: cited ? Number(cited[1] || cited[2] || cited[3]) : 0,
+            type: mode,
+            keyword
+          });
+        }
+      }
+      return results;
+    }
+
+    function fillReferenceFromResult(result) {
+      $("refApa").value = result.apa || result.title || "";
+      $("refLink").value = result.link || "";
+      $("refNote").value = result.snippet || "";
+    }
+
+    function journalName(journal) {
+      return typeof journal === "string" ? journal : journal.name;
+    }
+
+    function normalizeJournal(journal) {
+      return typeof journal === "string" ? { name: journal, homepage: "", aimScope: "", indexValues: [] } : journal;
+    }
+
+    function googleSearchUrl(keyword, page = 0) {
+      return `https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${page * 10}&num=10`;
+    }
+
+    async function fetchGoogleJournalResults(keyword, page = 0) {
+      const url = googleSearchUrl(`${keyword} journal homepage aim scope indexing`, page);
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const anchors = Array.from(doc.querySelectorAll("a"));
+      const candidates = anchors.map((anchor) => {
+        const rawHref = anchor.getAttribute("href") || "";
+        const href = cleanGoogleHref(rawHref);
+        const title = anchor.textContent.replace(/\s+/g, " ").trim();
+        return { title, homepage: href, keyword, aimScope: "", indexValues: [] };
+      }).filter((item) => {
+        const haystack = `${item.title} ${item.homepage}`.toLowerCase();
+        return item.title.length > 8 && /^https?:\/\//.test(item.homepage) && /(journal|homepage|aim|scope|about|author|submission)/i.test(haystack);
+      });
+      const unique = [];
+      for (const item of candidates) {
+        if (!unique.some((seen) => seen.homepage === item.homepage)) unique.push(item);
+        if (unique.length >= 10) break;
+      }
+      return Promise.all(unique.map(inspectJournalHomepage));
+    }
+
+    function cleanGoogleHref(href) {
+      if (href.startsWith("/url?")) {
+        const params = new URLSearchParams(href.slice(5));
+        return params.get("q") || "";
+      }
+      if (href.includes("google.com/url?")) {
+        try {
+          return new URL(href).searchParams.get("q") || "";
+        } catch {
+          return href;
+        }
+      }
+      return href;
+    }
+
+    async function inspectJournalHomepage(item) {
+      try {
+        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(item.homepage)}`);
+        if (!response.ok) throw new Error("homepage blocked");
+        const html = await response.text();
+        const text = new DOMParser().parseFromString(html, "text/html").body.textContent.replace(/\s+/g, " ").trim();
+        const aimMatch = text.match(/(aims?\s*(and|&)\s*scope|scope|about this journal|journal aims)[\s:.-]{0,20}(.{120,900})/i);
+        item.aimScope = aimMatch ? aimMatch[3].slice(0, 520) : text.slice(0, 360);
+        item.indexValues = extractIndexValues(text);
+      } catch {
+        item.aimScope = "homepage 可開啟，但本機工具無法直接讀取 aim and scope。";
+        item.indexValues = [];
+      }
+      return item;
+    }
+
+    function extractIndexValues(text) {
+      const indexes = ["SSCI", "SCI", "SCIE", "ESCI", "Scopus", "DOAJ", "MEDLINE", "PubMed", "ERIC", "TSSCI", "EI", "ProQuest", "EBSCO"];
+      const found = indexes.filter((name) => new RegExp(`\\b${name}\\b`, "i").test(text));
+      const impact = text.match(/impact factor[^0-9]{0,20}([0-9]+(?:\.[0-9]+)?)/i);
+      if (impact) found.push(`Impact Factor ${impact[1]}`);
+      return [...new Set(found)];
+    }
+
+    async function runJournalScholarSearch(keyword, page = 0) {
+      $("journalScholarList").innerHTML = `<div class="small">搜尋第 ${page + 1} 頁 Google 期刊結果中...</div>`;
+      try {
+        state.journalScholarResults = await fetchGoogleJournalResults(keyword, page);
+        state.journalScholarPage = page;
+        state.journalScholarQuery = keyword;
+        toast(`已顯示第 ${page + 1} 頁 Google 期刊結果`);
+      } catch {
+        state.journalScholarResults = [];
+        toast("無法直接讀取 Google 結果，已開啟搜尋頁");
+        window.open(googleSearchUrl(`${keyword} journal homepage aim scope indexing`, page), "_blank", "noreferrer");
+      }
+      saveProjectStore();
+      render();
+    }
+
+    function sourceScore(section, source) {
+      const text = `${source.title} ${source.note} ${(source.tags || []).join(" ")}`.toLowerCase();
+      return (section.keys || []).reduce((score, key) => score + (text.includes(key.toLowerCase()) ? 1 : 0), 0);
+    }
+
+    function matchedSources(section) {
+      const scored = state.sources
+        .map((source) => ({ source, score: sourceScore(section, source) }))
+        .filter((item) => item.score > 0);
+      return scored.length ? scored.sort((a, b) => b.score - a.score).map((item) => item.source) : state.sources.slice(0, 3);
+    }
+
+    function buildDraft(section) {
+      const sources = matchedSources(section);
+      const evidence = sources.slice(0, 4).map((source) => `「${source.title}」指出：${source.note}`).join("\n\n");
+      const focusLine = `本章將依據章節目的整理資料、建立分析脈絡，並回扣中文摘要所設定的研究主旨。`;
+      const theoryLine = state.coreTheory ? `核心理論與分析框架為：${state.coreTheory}` : "核心理論尚未填入，可在研究設定中補上分析框架。";
+      const sourceLine = evidence || "此處可放入文獻摘錄、訪談片段、統計資料或田野紀錄，並標示其與本章目的的關聯。";
+      return `${section.title}\n\n${section.aim}\n\n中文摘要核心：${state.theme || "尚未填入中文摘要"}\n\n${theoryLine}\n\n${focusLine}\n\n${sourceLine}\n\n綜合而言，本章可先界定核心概念，再比較不同資料之間的共同點與差異，最後回扣摘要中的研究焦點，說明這些資料如何支持後續章節的分析。`;
+    }
+
+    function organize() {
+      save();
+      state.sections.forEach((section) => {
+        state.drafts[section.title] = buildDraft(section);
+      });
+      saveProjectStore();
+      render();
+      showView("draft");
+      toast("已整理成章節草稿");
+    }
+
+    function exportMarkdown() {
+      save();
+      const lines = buildExportLines("markdown");
+      const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${state.title || "thesis-draft"}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("已匯出 Markdown");
+    }
+
+    function exportText() {
+      save();
+      const lines = buildExportLines("text");
+      const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${state.title || "thesis-draft"}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("已匯出 TXT");
+    }
+
+    function buildExportLines(format) {
+      const h1 = format === "markdown" ? "# " : "";
+      const h2 = format === "markdown" ? "## " : "";
+      const h3 = format === "markdown" ? "### " : "";
+      const bullet = format === "markdown" ? "- " : "";
+      const lines = [
+        `${h1}${state.title || "未命名研究"}`,
+        state.englishTitle ? `\n${state.englishTitle}` : "",
+        "",
+        `${h2}中文摘要`,
+        state.theme || "",
+        "",
+        `${h2}English Abstract`,
+        state.enAbstract || "",
+        "",
+        `${h2}核心理論`,
+        state.coreTheory || "",
+        "",
+        `${h2}中文關鍵字`,
+        state.zhKeywords || "",
+        "",
+        `${h2}English Keywords`,
+        state.enKeywords || "",
+        "",
+        `${h2}目標期刊`,
+        ...(state.targetJournals.map((journal) => {
+          const item = normalizeJournal(journal);
+          return `${bullet}${item.name}${item.homepage ? ` (${item.homepage})` : ""}`;
+        })),
+        "",
+        `${h2}章節草稿`
+      ];
+      state.sections.forEach((section) => {
+        const draft = state.drafts[section.title] || buildDraft(section);
+        lines.push("", `${h3}${section.title}`, "", draft.replace(section.title, "").trim());
+      });
+      lines.push("", `${h2}參考資料`);
+      state.references.forEach((reference) => {
+        lines.push("", `${bullet}${reference.apa} ${reference.link ? reference.link : ""}`, `搜尋關鍵字：${reference.keyword || ""}`);
+      });
+      return lines;
+    }
+
+    function renderSections() {
+      $("sectionList").innerHTML = state.sections.map((section, index) => {
+        const upDisabled = index === 0 ? "disabled" : "";
+        const downDisabled = index === state.sections.length - 1 ? "disabled" : "";
+        if (editingSectionIndex === index) {
+          return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(section.title || "編輯章節")}</strong>
+            <div class="card-actions">
+              <button class="action-btn" data-move-section="${index}" data-move-direction="-1" title="往上移動" ${upDisabled}>↑</button>
+              <button class="action-btn" data-move-section="${index}" data-move-direction="1" title="往下移動" ${downDisabled}>↓</button>
+              <button class="action-btn active" data-edit-section="${index}" title="正在編輯">⚙</button>
+              <button class="danger" data-remove-section="${index}" title="刪除">×</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>章節名稱</label>
+            <input data-section-edit="title" value="${escapeHtml(section.title || "")}">
+          </div>
+          <div class="field">
+            <label>敘述</label>
+            <textarea data-section-edit="aim">${escapeHtml(section.aim || "")}</textarea>
+          </div>
+          <div class="field">
+            <label>關鍵字</label>
+            <input data-section-edit="keys" value="${escapeHtml((section.keys || []).join(", "))}">
+          </div>
+          <div class="tag-row">
+            <button class="chip" data-save-section="${index}">儲存章節</button>
+          </div>
+        </article>
+          `;
+        }
+        return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(section.title)}</strong>
+            <div class="card-actions">
+              <button class="action-btn" data-move-section="${index}" data-move-direction="-1" title="往上移動" ${upDisabled}>↑</button>
+              <button class="action-btn" data-move-section="${index}" data-move-direction="1" title="往下移動" ${downDisabled}>↓</button>
+              <button class="action-btn" data-edit-section="${index}" title="編輯章節">⚙</button>
+              <button class="danger" data-remove-section="${index}" title="刪除">×</button>
+            </div>
+          </div>
+          <div class="small">${escapeHtml(section.aim)}</div>
+          <div class="tag-row">${(section.keys || []).map((key) => `<span class="tag">${escapeHtml(key)}</span>`).join("")}</div>
+        </article>
+        `;
+      }).join("");
+    }
+
+    function renderProjects() {
+      $("projectList").innerHTML = projectStore.projects.map((project, index) => {
+        const upDisabled = index === 0 ? "disabled" : "";
+        const downDisabled = index === projectStore.projects.length - 1 ? "disabled" : "";
+        return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(project.title || "未命名研究")}</strong>
+            <div class="card-actions">
+              <button class="action-btn" data-move-project="${index}" data-move-direction="-1" title="往上移動" ${upDisabled}>↑</button>
+              <button class="action-btn" data-move-project="${index}" data-move-direction="1" title="往下移動" ${downDisabled}>↓</button>
+              <button class="action-btn ${project.id === state.id ? "active" : ""}" data-open-project="${escapeHtml(project.id)}" title="開啟研究專案">⚙</button>
+              <button class="danger" data-delete-project="${escapeHtml(project.id)}" title="刪除">×</button>
+            </div>
+          </div>
+          <div class="meta">${project.id === state.id ? "目前開啟" : "可開啟"} · ${escapeHtml(project.updatedAt || "")}</div>
+          <div class="small">${escapeHtml(project.theme || project.coreTheory || "尚未填入摘要")}</div>
+        </article>
+      `}).join("") || `<div class="small">尚無研究專案</div>`;
+    }
+
+    function renderJournals() {
+      $("journalList").innerHTML = sharedJournals.length ? `
+        <h3>已儲存目標期刊</h3>
+        ${sharedJournals.map((rawJournal) => {
+        const journal = normalizeJournal(rawJournal);
+        return `
+        <label class="check-row">
+          <input type="checkbox" data-journal="${escapeHtml(journal.name)}" ${state.targetJournals.some((item) => journalName(item) === journal.name) ? "checked" : ""}>
+          <span>
+            <strong>${escapeHtml(journal.name)}</strong>
+            <span class="small">${journal.homepage ? `Homepage：${escapeHtml(journal.homepage)}` : "已儲存期刊"}</span>
+          </span>
+        </label>
+      `}).join("")}` : "";
+      $("selectedJournalList").innerHTML = state.targetJournals.length ? state.targetJournals.map((rawJournal, journalIndex) => {
+        const journal = normalizeJournal(rawJournal);
+        return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(journal.name)}</strong>
+            <button class="danger" data-remove-journal="${escapeHtml(journal.name)}" title="刪除">×</button>
+          </div>
+          <div class="field">
+            <label>期刊標題</label>
+            <input data-journal-edit="name" value="${escapeHtml(journal.name || "")}">
+          </div>
+          <div class="field">
+            <label>Homepage</label>
+            <input data-journal-edit="homepage" value="${escapeHtml(journal.homepage || "")}">
+          </div>
+          <div class="tag-row">
+            ${journal.homepage ? `<a class="chip" href="${escapeHtml(journal.homepage)}" target="_blank" rel="noreferrer">開啟 Homepage</a>` : ""}
+          </div>
+          <div class="field">
+            <label>Aim & Scope</label>
+            <textarea data-journal-edit="aimScope">${escapeHtml(journal.aimScope || "")}</textarea>
+          </div>
+          <div class="field">
+            <label>Index</label>
+            <input data-journal-edit="indexValues" value="${escapeHtml((journal.indexValues || []).join(", "))}">
+          </div>
+          <div class="tag-row">
+            <button class="chip" data-save-journal="${journalIndex}">儲存期刊</button>
+            ${(journal.indexValues || []).map((value) => `<span class="tag">${escapeHtml(value)}</span>`).join("")}
+          </div>
+        </article>
+      `}).join("") : `<div class="small">尚未選擇期刊</div>`;
+    }
+
+    function renderSources() {
+      $("sourceList").innerHTML = state.sources.length ? state.sources.map((source, index) => {
+        const upDisabled = index === 0 ? "disabled" : "";
+        const downDisabled = index === state.sources.length - 1 ? "disabled" : "";
+        if (editingSourceIndex === index) {
+          return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(source.title)}</strong>
+            <div class="card-actions">
+              <button class="action-btn" data-move-source="${index}" data-move-direction="-1" title="往上移動" ${upDisabled}>↑</button>
+              <button class="action-btn" data-move-source="${index}" data-move-direction="1" title="往下移動" ${downDisabled}>↓</button>
+              <button class="action-btn active" data-edit-source="${index}" title="正在編輯">⚙</button>
+              <button class="danger" data-remove-source="${index}" title="刪除">×</button>
+            </div>
+          </div>
+          ${sourceImageSrc(source) ? `<img class="figure-thumb" src="${escapeHtml(sourceImageSrc(source))}" alt="${escapeHtml(source.title)}" title="可用瀏覽器右鍵在新視窗開啟圖檔">` : ""}
+          <div class="field">
+            <label>圖標</label>
+            <input data-source-edit="title" value="${escapeHtml(source.title || "")}">
+          </div>
+          <div class="field">
+            <label>檔名</label>
+            <input data-source-edit="fileName" value="${escapeHtml(source.fileName || "")}">
+          </div>
+          <div class="field">
+            <label>敘述</label>
+            <textarea data-source-edit="note">${escapeHtml(source.note || "")}</textarea>
+          </div>
+          <div class="field">
+            <label>關鍵字</label>
+            <input data-source-edit="tags" value="${escapeHtml((source.tags || []).join(", "))}">
+          </div>
+          <div class="tag-row">
+            <button class="chip" data-save-source="${index}">儲存圖目錄</button>
+          </div>
+        </article>
+          `;
+        }
+        return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(source.title)}</strong>
+            <div class="card-actions">
+              <button class="action-btn" data-move-source="${index}" data-move-direction="-1" title="往上移動" ${upDisabled}>↑</button>
+              <button class="action-btn" data-move-source="${index}" data-move-direction="1" title="往下移動" ${downDisabled}>↓</button>
+              <button class="action-btn" data-edit-source="${index}" title="編輯圖目錄">⚙</button>
+              <button class="danger" data-remove-source="${index}" title="刪除">×</button>
+            </div>
+          </div>
+          ${sourceImageSrc(source) ? `<img class="figure-thumb" src="${escapeHtml(sourceImageSrc(source))}" alt="${escapeHtml(source.title)}" title="可用瀏覽器右鍵在新視窗開啟圖檔">` : ""}
+          <div class="meta">${escapeHtml(source.fileName || "未上傳圖檔")}</div>
+          <div class="small">${escapeHtml(source.note)}</div>
+          <div class="tag-row">${(source.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+        </article>
+        `;
+      }).join("") : `<div class="small">尚未加入圖目錄</div>`;
+    }
+
+    function makeApaReference() {
+      return $("refApa").value.trim().replace(/\s+/g, " ");
+    }
+
+    function renderReferences() {
+      const refs = state.references.map((reference, index) => {
+        const upDisabled = index === 0 ? "disabled" : "";
+        const downDisabled = index === state.references.length - 1 ? "disabled" : "";
+        if (editingReferenceIndex !== index) {
+          return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(reference.apa)}</strong>
+            <div class="card-actions">
+              <button class="action-btn" data-move-reference="${index}" data-move-direction="-1" title="往上移動" ${upDisabled}>↑</button>
+              <button class="action-btn" data-move-reference="${index}" data-move-direction="1" title="往下移動" ${downDisabled}>↓</button>
+              <button class="action-btn" data-edit-reference="${index}" title="編輯參考資料">⚙</button>
+              <button class="danger" data-remove-reference="${index}" title="刪除">×</button>
+            </div>
+          </div>
+          ${reference.keyword ? `<div class="meta">搜尋關鍵字：${escapeHtml(reference.keyword)}</div>` : ""}
+          ${reference.link ? `<a class="chip" href="${escapeHtml(reference.link)}" target="_blank" rel="noreferrer">開啟連結</a>` : ""}
+          <div class="small">${escapeHtml(reference.note || reference.zhNote || "")}</div>
+        </article>
+          `;
+        }
+        return `
+        <article class="card">
+          <div class="card-head">
+            <strong>${escapeHtml(reference.apa)}</strong>
+            <div class="card-actions">
+              <button class="action-btn" data-move-reference="${index}" data-move-direction="-1" title="往上移動" ${upDisabled}>↑</button>
+              <button class="action-btn" data-move-reference="${index}" data-move-direction="1" title="往下移動" ${downDisabled}>↓</button>
+              <button class="action-btn active" data-edit-reference="${index}" title="正在編輯">⚙</button>
+              <button class="danger" data-remove-reference="${index}" title="刪除">×</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>APA</label>
+            <textarea data-reference-edit="apa">${escapeHtml(reference.apa || "")}</textarea>
+          </div>
+          <div class="field">
+            <label>搜尋關鍵字</label>
+            <input data-reference-edit="keyword" value="${escapeHtml(reference.keyword || "")}">
+          </div>
+          <div class="field">
+            <label>資料連結</label>
+            <input data-reference-edit="link" value="${escapeHtml(reference.link || "")}">
+          </div>
+          <div class="field">
+            <label>摘要 / 備註</label>
+            <textarea data-reference-edit="note">${escapeHtml(reference.note || reference.zhNote || "")}</textarea>
+          </div>
+          <div class="tag-row">
+            ${reference.link ? `<a class="chip" href="${escapeHtml(reference.link)}" target="_blank" rel="noreferrer">開啟連結</a>` : ""}
+            <button class="chip" data-save-reference="${index}">儲存參考資料</button>
+            <button class="chip" data-translate-saved="${index}">英翻中</button>
+          </div>
+        </article>
+      `}).join("");
+      $("referenceList").innerHTML = `
+        <div class="section-list">
+          ${refs || `<div class="small">尚未儲存參考資料</div>`}
+        </div>
+      `;
+    }
+
+    function renderDrafts() {
+      const referenceApaText = state.references.map((reference) => reference.apa).filter(Boolean).join("\n");
+      $("frontMatterDraft").innerHTML = `
+        <article class="draft-item card">
+          <div class="card-head">
+            <strong>中英文摘要與關鍵字</strong>
+            <span class="tag">前置內容</span>
+          </div>
+          <div class="field">
+            <label for="draftZhAbstract">中文摘要</label>
+            <textarea class="draft-output" id="draftZhAbstract" data-field-draft="theme">${escapeHtml(state.theme || "")}</textarea>
+          </div>
+          <div class="field">
+            <label for="draftEnAbstract">English Abstract</label>
+            <textarea class="draft-output" id="draftEnAbstract" data-field-draft="enAbstract">${escapeHtml(state.enAbstract || "")}</textarea>
+          </div>
+          <div class="field">
+            <label for="draftZhKeywords">中文關鍵字</label>
+            <textarea id="draftZhKeywords" data-field-draft="zhKeywords">${escapeHtml(state.zhKeywords || "")}</textarea>
+          </div>
+          <div class="field">
+            <label for="draftEnKeywords">English Keywords</label>
+            <textarea id="draftEnKeywords" data-field-draft="enKeywords">${escapeHtml(state.enKeywords || "")}</textarea>
+          </div>
+        </article>
+      `;
+      const sectionDrafts = state.sections.map((section) => {
+        const draft = state.drafts[section.title] || buildDraft(section);
+        return `
+          <article class="draft-item card">
+            <div class="card-head">
+              <strong>${escapeHtml(section.title)}</strong>
+              <span class="tag">${matchedSources(section).length} 筆資料</span>
+            </div>
+            <textarea class="draft-output" data-draft="${escapeHtml(section.title)}">${escapeHtml(draft)}</textarea>
+          </article>
+        `;
+      }).join("");
+      $("draftList").innerHTML = `${sectionDrafts}
+        <article class="draft-item card">
+          <div class="card-head">
+            <strong>Reference</strong>
+            <span class="tag">${state.references.length} 筆</span>
+          </div>
+          <textarea class="draft-output" readonly>${escapeHtml(referenceApaText || "尚未儲存參考資料")}</textarea>
+        </article>
+      `;
+    }
+
+    function countTextCharacters() {
+      const values = [
+        state.title,
+        state.englishTitle,
+        state.coreTheory,
+        state.theme,
+        state.enAbstract,
+        state.zhKeywords,
+        state.enKeywords,
+        ...Object.values(state.drafts || {})
+      ];
+      return values.join("").replace(/\s/g, "").length;
+    }
+
+    function renderProgress() {
+      $("headline").textContent = state.title || "未命名研究";
+      $("currentProjectTabTitle").textContent = state.title || "尚未選擇";
+      $("subtitle").textContent = `${state.targetJournals.length} 個目標期刊 · ${state.sections.length} 章`;
+      $("progressText").textContent = `${countTextCharacters()} 字 · ${state.sources.length} 張圖 · ${state.references.length} 筆參考資料`;
+    }
+
+    function render() {
+      fields.forEach((id) => {
+        if ($(id)) $(id).value = state[id] || "";
+      });
+      renderProjects();
+      renderSections();
+      renderJournals();
+      renderSources();
+      renderReferences();
+      renderDrafts();
+      renderProgress();
+    }
+
+    function showView(name) {
+      document.querySelectorAll(".view").forEach((view) => view.classList.add("hidden"));
+      $(`view-${name}`).classList.remove("hidden");
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.setAttribute("aria-selected", String(tab.dataset.view === name));
+      });
+    }
+
+    document.querySelectorAll(".tab[data-view]").forEach((tab) => {
+      tab.addEventListener("click", () => showView(tab.dataset.view));
+    });
+
+    $("brandHomeBtn").addEventListener("click", () => showView("home"));
+    fields.forEach((id) => $(id)?.addEventListener("input", save));
+    $("saveSettingsBtn").addEventListener("click", () => { save(); toast("已儲存研究專案設定"); });
+    $("theme").addEventListener("input", () => translateAbstract("theme", "enAbstract", "zh-TW", "en"));
+    $("enAbstract").addEventListener("input", () => translateAbstract("enAbstract", "theme", "en", "zh-TW"));
+    $("newProjectBtn").addEventListener("click", () => {
+      const title = $("newProjectTitle").value.trim() || "未命名研究";
+      const project = createDefaultState(title);
+      projectStore.projects.unshift(project);
+      projectStore.currentId = project.id;
+      state = project;
+      $("newProjectTitle").value = "";
+      saveProjectStore();
+      render();
+      showView("plan");
+      toast("已建立新研究專案");
+    });
+    $("addManualJournalBtn").addEventListener("click", () => {
+      const name = $("manualJournalTitle").value.trim();
+      if (!name) return toast("請輸入期刊標題");
+      const journal = {
+        name,
+        homepage: $("manualJournalHomepage").value.trim(),
+        aimScope: $("manualJournalAim").value.trim(),
+        indexValues: splitTags($("manualJournalIndex").value)
+      };
+      const existingIndex = state.targetJournals.findIndex((item) => journalName(item) === name);
+      if (existingIndex >= 0) {
+        state.targetJournals[existingIndex] = journal;
+      } else {
+        state.targetJournals.push(journal);
+      }
+      upsertSharedJournal(journal);
+      ["manualJournalTitle", "manualJournalHomepage", "manualJournalAim", "manualJournalIndex"].forEach((id) => $(id).value = "");
+      saveProjectStore();
+      render();
+      toast("已加入目標期刊");
+    });
+    $("figureFile").addEventListener("change", () => {
+      const file = $("figureFile").files?.[0];
+      if (file && !$("sourceTitle").value.trim()) {
+        $("sourceTitle").value = file.name.replace(/\.[^.]+$/, "");
+      }
+    });
+    $("saveProjectFolderBtn").addEventListener("click", async () => {
+      try {
+        await saveProjectsToFolder();
+      } catch (error) {
+        updateSyncStatus(error.message || "無法儲存到本機資料夾");
+        toast(error.message || "無法儲存研究專案");
+      }
+    });
+    $("exportProjectBtn").addEventListener("click", () => {
+      save();
+      downloadJson(buildProjectPayload(state), projectFileName(state));
+      toast("已匯出目前研究專案");
+    });
+    $("saveAllProjectsBtn").addEventListener("click", async () => {
+      try {
+        await saveAllProjectsToFolder();
+      } catch (error) {
+        updateSyncStatus(error.message || "無法全部儲存");
+        toast(error.message || "無法全部儲存");
+      }
+    });
+    $("exportAllProjectsBtn").addEventListener("click", () => {
+      save();
+      downloadJson(buildBackupPayload(), backupFileName());
+      toast("已全部匯出");
+    });
+    $("openProjectFileBtn").addEventListener("click", async () => {
+      try {
+        backupInputMode = "project";
+        if (!window.showOpenFilePicker) {
+          $("backupFileInput").click();
+          return;
+        }
+        const file = await chooseJsonFromProjectStorage();
+        if (!file) return;
+        applyProjectPayload(JSON.parse(await file.text()), { allowCollection: false });
+        await saveAllProjectsToRememberedFolder();
+        showView("home");
+        updateSyncStatus(`已開啟研究專案檔：${file.name}`);
+        toast("已開啟研究專案");
+      } catch (error) {
+        toast(error.message || "未開啟研究專案");
+      }
+    });
+    $("openProjectCollectionBtn").addEventListener("click", async () => {
+      try {
+        backupInputMode = "collection";
+        if (await loadLatestProjectJsonFromFolder()) {
+          showView("home");
+          toast("已開啟 project-storage 專案集合");
+          return;
+        }
+        updateSyncStatus(`找不到可直接讀取的 ${preferredProjectFolderName} 專案集合，請手動選擇全部研究專案 JSON。`);
+        if (!window.showOpenFilePicker) {
+          $("backupFileInput").click();
+          return;
+        }
+        const file = await chooseJsonFromProjectStorage();
+        if (!file) return;
+        applyProjectPayload(JSON.parse(await file.text()), { allowCollection: true });
+        await saveAllProjectsToRememberedFolder();
+        showView("home");
+        updateSyncStatus(`已開啟專案集合：${file.name}`);
+        toast("已開啟專案集合");
+      } catch (error) {
+        toast(error.message || "專案集合無法開啟");
+      }
+    });
+    $("backupFileInput").addEventListener("change", async () => {
+      const file = $("backupFileInput").files?.[0];
+      if (!file) return;
+      try {
+        applyProjectPayload(JSON.parse(await file.text()), { allowCollection: backupInputMode === "collection" });
+        await saveAllProjectsToRememberedFolder();
+        $("backupFileInput").value = "";
+        showView("home");
+        updateSyncStatus(`已開啟${backupInputMode === "collection" ? "專案集合" : "研究專案檔"}：${file.name}`);
+        toast(backupInputMode === "collection" ? "已開啟專案集合" : "已開啟研究專案");
+      } catch (error) {
+        toast(error.message || "研究專案檔無法開啟");
+      }
+    });
+    $("organizeBtn").addEventListener("click", organize);
+    $("exportTxtBtn").addEventListener("click", exportText);
+
+    $("scholarSearchBtn").addEventListener("click", () => {
+      const keyword = $("scholarKeyword").value.trim();
+      if (!keyword) return toast("請輸入搜尋關鍵字");
+      window.open(`https://scholar.google.com/scholar?q=${encodeURIComponent(keyword)}`, "_blank", "noreferrer");
+    });
+
+    $("copyScholarLinkBtn").addEventListener("click", async () => {
+      const keyword = $("scholarKeyword").value.trim();
+      if (!keyword) return toast("請輸入搜尋關鍵字");
+      const link = `https://scholar.google.com/scholar?q=${encodeURIComponent(keyword)}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        toast("已複製 Scholar 連結");
+      } catch {
+        $("refLink").value = link;
+        toast("已放入連結欄位");
+      }
+    });
+
+    $("translateRefBtn").addEventListener("click", async () => {
+      const note = $("refNote").value.trim() || $("refApa").value.trim();
+      if (!note) return toast("請輸入要翻譯的內容");
+      try {
+        $("refNote").value = await translateText(note, "en", "zh-TW");
+        toast("已翻譯成中文");
+      } catch {
+        window.open(`https://translate.google.com/?sl=en&tl=zh-TW&text=${encodeURIComponent(note)}&op=translate`, "_blank", "noreferrer");
+      }
+    });
+
+    $("saveReferenceBtn").addEventListener("click", () => {
+      const apa = makeApaReference();
+      const keyword = $("scholarKeyword").value.trim();
+      if (!apa) return toast("請填入文獻資訊");
+      state.references.unshift({
+        apa,
+        keyword,
+        link: $("refLink").value.trim() || (keyword ? `https://scholar.google.com/scholar?q=${encodeURIComponent(keyword)}` : ""),
+        note: $("refNote").value.trim(),
+        zhNote: "",
+        createdAt: new Date().toLocaleString("zh-TW")
+      });
+      ["refApa", "refLink", "refNote"].forEach((id) => $(id).value = "");
+      saveProjectStore();
+      render();
+      toast("已儲存參考資料");
+    });
+
+    $("addSectionBtn").addEventListener("click", () => {
+      const title = $("sectionTitle").value.trim();
+      if (!title) return toast("請輸入章節名稱");
+      state.sections.push({
+        title,
+        aim: $("sectionAim").value.trim(),
+        keys: splitTags($("sectionKeys").value)
+      });
+      $("sectionTitle").value = "";
+      $("sectionAim").value = "";
+      $("sectionKeys").value = "";
+      save();
+      toast("已加入章節");
+    });
+
+    $("addSourceBtn").addEventListener("click", async () => {
+      const title = $("sourceTitle").value.trim();
+      const note = $("sourceNote").value.trim();
+      const file = $("figureFile").files?.[0];
+      if (!title) return toast("請填入圖標");
+      state.sources.unshift({
+        title,
+        type: "圖",
+        note,
+        tags: splitTags($("sourceTags").value),
+        fileName: file?.name || "",
+        imageData: file ? await fileToDataUrl(file) : ""
+      });
+      $("sourceTitle").value = "";
+      $("sourceNote").value = "";
+      $("sourceTags").value = "";
+      $("figureFile").value = "";
+      save();
+      toast("已加入圖目錄");
+    });
+
+    document.addEventListener("click", (event) => {
+      const sectionIndex = event.target.dataset.removeSection;
+      const sourceIndex = event.target.dataset.removeSource;
+      const journal = event.target.dataset.removeJournal;
+      const cacheIndex = event.target.dataset.removeCache;
+      const referenceIndex = event.target.dataset.removeReference;
+      const openScholar = event.target.dataset.openScholar;
+      const fillKeyword = event.target.dataset.fillKeyword;
+      const translateSaved = event.target.dataset.translateSaved;
+      const pickScholar = event.target.dataset.pickScholar;
+      const addJournalScholar = event.target.dataset.addJournalScholar;
+      const openProject = event.target.dataset.openProject;
+      const deleteProject = event.target.dataset.deleteProject;
+      const saveJournalIndex = event.target.dataset.saveJournal;
+      const saveReferenceIndex = event.target.dataset.saveReference;
+      const editSectionIndex = event.target.dataset.editSection;
+      const saveSectionIndex = event.target.dataset.saveSection;
+      const moveSectionIndex = event.target.dataset.moveSection;
+      const moveProjectIndex = event.target.dataset.moveProject;
+      const editSourceIndex = event.target.dataset.editSource;
+      const saveSourceIndex = event.target.dataset.saveSource;
+      const moveSourceIndex = event.target.dataset.moveSource;
+      const editReferenceIndex = event.target.dataset.editReference;
+      const moveReferenceIndex = event.target.dataset.moveReference;
+      if (openProject !== undefined) {
+        const next = projectStore.projects.find((project) => project.id === openProject);
+        if (next) {
+          state = next;
+          projectStore.currentId = next.id;
+          saveProjectStore();
+          render();
+          showView("plan");
+          toast("已開啟研究專案");
+        }
+      }
+      if (deleteProject !== undefined) {
+        if (projectStore.projects.length <= 1) return toast("至少保留一個研究專案");
+        if (!confirm("刪除此研究專案？")) return;
+        projectStore.projects = projectStore.projects.filter((project) => project.id !== deleteProject);
+        if (state.id === deleteProject) {
+          state = projectStore.projects[0];
+          projectStore.currentId = state.id;
+        }
+        saveProjectStore();
+        render();
+        showView("home");
+        toast("已刪除研究專案");
+      }
+      if (moveProjectIndex !== undefined) {
+        const index = Number(moveProjectIndex);
+        const targetIndex = moveItem(projectStore.projects, index, Number(event.target.dataset.moveDirection || 0));
+        if (targetIndex !== null) {
+          saveProjectStore();
+          render();
+          toast("已更新研究專案順序");
+        }
+      }
+      if (saveJournalIndex !== undefined) {
+        const index = Number(saveJournalIndex);
+        const card = event.target.closest(".card");
+        if (card && state.targetJournals[index] !== undefined) {
+          const get = (name) => card.querySelector(`[data-journal-edit="${name}"]`)?.value.trim() || "";
+          state.targetJournals[index] = {
+            name: get("name") || "未命名期刊",
+            homepage: get("homepage"),
+            aimScope: get("aimScope"),
+            indexValues: splitTags(get("indexValues"))
+          };
+          upsertSharedJournal(state.targetJournals[index]);
+          saveProjectStore();
+          render();
+          toast("已儲存期刊");
+        }
+      }
+      if (saveReferenceIndex !== undefined) {
+        const index = Number(saveReferenceIndex);
+        const card = event.target.closest(".card");
+        if (card && state.references[index]) {
+          const get = (name) => card.querySelector(`[data-reference-edit="${name}"]`)?.value.trim() || "";
+          state.references[index] = {
+            ...state.references[index],
+            apa: get("apa"),
+            keyword: get("keyword"),
+            link: get("link"),
+            note: get("note"),
+            zhNote: ""
+          };
+          editingReferenceIndex = null;
+          saveProjectStore();
+          render();
+          toast("已儲存參考資料");
+        }
+      }
+      if (editSectionIndex !== undefined) {
+        editingSectionIndex = Number(editSectionIndex);
+        renderSections();
+      }
+      if (saveSectionIndex !== undefined) {
+        const index = Number(saveSectionIndex);
+        const card = event.target.closest(".card");
+        if (card && state.sections[index]) {
+          const get = (name) => card.querySelector(`[data-section-edit="${name}"]`)?.value.trim() || "";
+          const oldTitle = state.sections[index].title;
+          const nextTitle = get("title") || oldTitle;
+          state.sections[index] = {
+            title: nextTitle,
+            aim: get("aim"),
+            keys: splitTags(get("keys"))
+          };
+          if (oldTitle !== nextTitle && state.drafts[oldTitle] !== undefined) {
+            state.drafts[nextTitle] = state.drafts[oldTitle];
+            delete state.drafts[oldTitle];
+          }
+          editingSectionIndex = null;
+          saveProjectStore();
+          render();
+          toast("已儲存章節");
+        }
+      }
+      if (moveSectionIndex !== undefined) {
+        const index = Number(moveSectionIndex);
+        const direction = Number(event.target.dataset.moveDirection || 0);
+        const targetIndex = moveItem(state.sections, index, direction);
+        if (targetIndex !== null) {
+          editingSectionIndex = shiftedEditIndex(editingSectionIndex, index, targetIndex);
+          saveProjectStore();
+          render();
+          toast("已更新章節順序");
+        }
+      }
+      if (editSourceIndex !== undefined) {
+        editingSourceIndex = Number(editSourceIndex);
+        renderSources();
+      }
+      if (saveSourceIndex !== undefined) {
+        const index = Number(saveSourceIndex);
+        const card = event.target.closest(".card");
+        if (card && state.sources[index]) {
+          const get = (name) => card.querySelector(`[data-source-edit="${name}"]`)?.value.trim() || "";
+          state.sources[index] = {
+            ...state.sources[index],
+            title: get("title") || state.sources[index].title,
+            fileName: get("fileName"),
+            note: get("note"),
+            tags: splitTags(get("tags"))
+          };
+          editingSourceIndex = null;
+          saveProjectStore();
+          render();
+          toast("已儲存圖目錄");
+        }
+      }
+      if (moveSourceIndex !== undefined) {
+        const index = Number(moveSourceIndex);
+        const targetIndex = moveItem(state.sources, index, Number(event.target.dataset.moveDirection || 0));
+        if (targetIndex !== null) {
+          editingSourceIndex = shiftedEditIndex(editingSourceIndex, index, targetIndex);
+          saveProjectStore();
+          render();
+          toast("已更新圖目錄順序");
+        }
+      }
+      if (editReferenceIndex !== undefined) {
+        editingReferenceIndex = Number(editReferenceIndex);
+        renderReferences();
+      }
+      if (moveReferenceIndex !== undefined) {
+        const index = Number(moveReferenceIndex);
+        const targetIndex = moveItem(state.references, index, Number(event.target.dataset.moveDirection || 0));
+        if (targetIndex !== null) {
+          editingReferenceIndex = shiftedEditIndex(editingReferenceIndex, index, targetIndex);
+          saveProjectStore();
+          render();
+          toast("已更新參考資料順序");
+        }
+      }
+      if (sectionIndex !== undefined) {
+        const index = Number(sectionIndex);
+        const removed = state.sections.splice(index, 1)[0];
+        delete state.drafts[removed.title];
+        if (editingSectionIndex === index) editingSectionIndex = null;
+        if (editingSectionIndex > index) editingSectionIndex -= 1;
+        save();
+      }
+      if (sourceIndex !== undefined) {
+        const index = Number(sourceIndex);
+        state.sources.splice(index, 1);
+        if (editingSourceIndex === index) editingSourceIndex = null;
+        if (editingSourceIndex > index) editingSourceIndex -= 1;
+        save();
+      }
+      if (journal !== undefined) {
+        state.targetJournals = state.targetJournals.filter((item) => journalName(item) !== journal);
+        saveProjectStore();
+        render();
+      }
+      if (cacheIndex !== undefined) {
+        render();
+      }
+      if (referenceIndex !== undefined) {
+        const index = Number(referenceIndex);
+        state.references.splice(index, 1);
+        if (editingReferenceIndex === index) editingReferenceIndex = null;
+        if (editingReferenceIndex > index) editingReferenceIndex -= 1;
+        saveProjectStore();
+        render();
+      }
+      if (openScholar !== undefined) {
+        window.open(`https://scholar.google.com/scholar?q=${encodeURIComponent(openScholar)}`, "_blank", "noreferrer");
+      }
+      if (fillKeyword !== undefined) {
+        $("scholarKeyword").value = fillKeyword;
+        showView("references");
+      }
+      if (translateSaved !== undefined) {
+        const index = Number(translateSaved);
+        const reference = state.references[index];
+        if (reference) {
+          translateText(reference.note || reference.apa, "en", "zh-TW").then((text) => {
+            state.references[index].zhNote = text;
+            saveProjectStore();
+            render();
+            toast("已翻譯參考資料");
+          }).catch(() => {
+            window.open(`https://translate.google.com/?sl=en&tl=zh-TW&text=${encodeURIComponent(reference.note || reference.apa)}&op=translate`, "_blank", "noreferrer");
+          });
+        }
+      }
+      if (addJournalScholar !== undefined) {
+        const result = state.journalScholarResults[Number(addJournalScholar)];
+        if (result && !state.targetJournals.some((item) => journalName(item) === result.title)) {
+          state.targetJournals.push({
+            name: result.title,
+            homepage: result.homepage || "",
+            aimScope: result.aimScope || "",
+            indexValues: result.indexValues || []
+          });
+          upsertSharedJournal(state.targetJournals[state.targetJournals.length - 1]);
+          saveProjectStore();
+          render();
+          toast("已加入目標期刊");
+        }
+      }
+    });
+
+    document.addEventListener("change", (event) => {
+      const journal = event.target.dataset.journal;
+      if (journal === undefined) return;
+      if (event.target.checked && !state.targetJournals.some((item) => journalName(item) === journal)) {
+        const shared = sharedJournals.find((item) => journalName(item) === journal);
+        state.targetJournals.push(shared ? normalizeJournal(shared) : journal);
+      }
+      if (!event.target.checked) {
+        state.targetJournals = state.targetJournals.filter((item) => journalName(item) !== journal);
+      }
+      saveProjectStore();
+      render();
+    });
+
+    document.addEventListener("input", (event) => {
+      const key = event.target.dataset.draft;
+      const fieldKey = event.target.dataset.fieldDraft;
+      if (key) {
+        state.drafts[key] = event.target.value;
+        saveProjectStore();
+        renderProgress();
+      }
+      if (fieldKey) {
+        state[fieldKey] = event.target.value;
+        if ($(fieldKey)) $(fieldKey).value = event.target.value;
+        saveProjectStore();
+        renderProgress();
+      }
+    });
+
+    render();
+
+    async function initializeProjectFolderSync() {
+      if (!window.showDirectoryPicker) {
+        updateSyncStatus("此瀏覽器不支援本機資料夾儲存；仍可使用匯出研究專案與全部匯出。");
+        return;
+      }
+      const loaded = await loadLatestProjectJsonFromFolder();
+      if (!loaded && !localStorage.getItem(folderSavedAtKey)) {
+        setTimeout(() => alert("目前研究專案尚未儲存到本機研究專案資料夾。請在左側「研究專案」按「儲存研究專案」建立本機 JSON 備份。"), 400);
+      }
+      if (!loaded && localStorage.getItem(folderSavedAtKey)) {
+        updateSyncStatus("已找到本機儲存紀錄；按「儲存研究專案」可更新資料夾 JSON。");
+      }
+    }
+
+    window.addEventListener("beforeunload", (event) => {
+      if (!hasUnsavedProjectChanges) return;
+      event.preventDefault();
+      event.returnValue = "研究專案尚未儲存到本機研究專案資料夾。";
+    });
+
+    initializeProjectFolderSync();
+  </script>
+</body>
+</html>
