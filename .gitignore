@@ -1,0 +1,3 @@
+project-storage/*.json
+project-storage/imgData/*
+!project-storage/imgData/.gitkeep
